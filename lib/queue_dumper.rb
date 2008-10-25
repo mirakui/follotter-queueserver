@@ -13,6 +13,7 @@ module Follotter
     DEQUEUE_SIZE = 10
     
     def self.build_queue
+      num_rows = 0
       open(QUEUE_PATH, 'w') do |f|
 
         conf = Pit.get('folloter_mysql', :require=>{
@@ -29,12 +30,17 @@ module Follotter
             " ORDER BY crawled_at ASC, followers_count DESC"
 
         res = db.query(q)
+        num_rows = res.num_rows
         res.each do |row|
           f.puts "#{row[0]} #{row[1]}"
         end
 
+        f.puts "#{END_ID} #{END_SCREEN_NAME}"
+        File.delete SEEK_PATH
+
         db.close
       end
+      num_rows
     end
 
     def self.queue(param={})
@@ -44,12 +50,22 @@ module Follotter
       res = nil
 
       queue_size = `/usr/bin/wc -l #{QUEUE_PATH}`.split(/\s+/).first.to_i
+      if queue_size>=index
+        cmd = "/usr/bin/tail -#{queue_size-index} #{QUEUE_PATH} | /usr/bin/head -#{size}"
+        p cmd
 
-      cmd = "/usr/bin/tail -#{queue_size-index} #{QUEUE_PATH} | /usr/bin/head -#{size}"
-      p cmd
-      res = `#{cmd}`
+        res = `#{cmd}`
+        #res = "1 hoge\n2 moge"
+        users = []
+        res.split(/\n/).each do |line|
+          col=line.split(/\s/)
+          users << {'id'=>col[0], 'screen_name'=>col[1]}
+        end
 
-      res
+        users
+      else
+        [{'id'=>END_ID, 'screen_name'=>END_SCREEN_NAME}]
+      end
     end
 
     def self.seek
@@ -65,8 +81,10 @@ module Follotter
     end
 
     def self.queue_next()
-      s = self::seek_next(1)
-      self::queue(:index=>s*DEQUEUE_SIZE, :size=>DEQUEUE_SIZE)
+      s = self::seek()
+      q = self::queue(:index=>s*DEQUEUE_SIZE, :size=>DEQUEUE_SIZE)
+      self::seek_next(1) unless q.empty?
+      q
     end
 
     protected
