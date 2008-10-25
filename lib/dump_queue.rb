@@ -23,7 +23,7 @@ module Follotter
         q = "SELECT id,screen_name"+
             " FROM users"+
             " WHERE language='ja'"+
-            " ORDER BY crawled_at ASC, followers_count DESC"
+            " ORDER BY crawled_at ASC, followers_count DESC LIMIT 35"
 
         res = db.query(q)
         res.each do |row|

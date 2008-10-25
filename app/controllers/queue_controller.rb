@@ -9,13 +9,14 @@ class QueueController < ApplicationController
   def next
     queue_next = nil
     Follotter::Lock.lock {
-      queue_next = Follotter::QueueDumper.queue_next.to_yaml
-      if queue_next.first['id']==END_ID
+      queue_next = Follotter::QueueDumper.queue_next
+      p queue_next.first['id']
+      if queue_next.first['id'].to_s==END_ID.to_s
         Follotter::QueueDumper.build_queue
-        queue_next = Follotter::QueueDumper.queue_next.to_yaml
+        queue_next = Follotter::QueueDumper.queue_next
       end
     }
-    render :text=>queue_next, :layout=>false
+    render :text=>queue_next.to_yaml, :layout=>false
   end
 
   def build
