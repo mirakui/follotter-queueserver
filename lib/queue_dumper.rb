@@ -49,6 +49,11 @@ module Follotter
       size = param[:size] || DEQUEUE_SIZE
 
       res = nil
+      
+      unless File.exist?(QUEUE_PATH)
+        self.build_queue 
+        seek
+      end
 
       queue_size = `/usr/bin/wc -l #{QUEUE_PATH}`.split(/\s+/).first.to_i
       if queue_size>=index
@@ -120,7 +125,7 @@ q = "SELECT id,screen_name,crawled_at"+
     " FROM users"+
     " WHERE language='ja'"+
     " ORDER BY crawled_at ASC, followers_count DESC"+
-    " LIMIT 10"
+    " LIMIT 20"
 
 res = db.query(q)
 num_rows = res.num_rows
