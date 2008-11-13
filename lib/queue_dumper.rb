@@ -27,7 +27,8 @@ module Follotter
         q = "SELECT id,screen_name"+
             " FROM users"+
             " WHERE language='ja'"+
-            " ORDER BY crawled_at ASC, followers_count DESC"
+            " ORDER BY crawled_at ASC, followers_count DESC"+
+            " LIMIT #{QUEUE_LIMIT}"
 
         res = db.query(q)
         num_rows = res.num_rows
@@ -107,12 +108,22 @@ end
 
 __END__
 
-include Follotter
+conf = Pit.get('folloter_mysql', :require=>{
+  'username' => 'username',
+  'password' => 'password',
+  'database' => 'database',
+  'host'=> 'host'
+})
+db = Mysql.new conf['host'], conf['username'], conf['password'], conf['database']
 
-Lock.lock {
-  puts '---a'
-  p Follotter::QueueDumper.queue_next
-  puts '---b'
-  p Follotter::QueueDumper.queue_next
-}
+q = "SELECT id,screen_name,crawled_at"+
+    " FROM users"+
+    " WHERE language='ja'"+
+    " ORDER BY crawled_at ASC, followers_count DESC"+
+    " LIMIT 10"
 
+res = db.query(q)
+num_rows = res.num_rows
+res.each do |row|
+  p row
+end

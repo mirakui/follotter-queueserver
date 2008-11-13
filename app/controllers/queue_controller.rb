@@ -10,7 +10,6 @@ class QueueController < ApplicationController
     queue_next = nil
     Follotter::Lock.lock {
       queue_next = Follotter::QueueDumper.queue_next
-      p queue_next.first['id']
       if queue_next.first['id'].to_s==END_ID.to_s
         Follotter::QueueDumper.build_queue
         queue_next = Follotter::QueueDumper.queue_next

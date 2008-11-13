@@ -6,5 +6,6 @@ module Follotter
     SEEK_PATH = PATH_BASE+'/queue/seek'
     END_ID = '-1'
     END_SCREEN_NAME = '=END'
+    QUEUE_LIMIT = 5000
   end
 end
