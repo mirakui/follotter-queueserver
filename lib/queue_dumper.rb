@@ -55,7 +55,7 @@ module Follotter
         seek
       end
 
-      queue_size = `/usr/bin/wc -l #{QUEUE_PATH}`.split(/\s+/).first.to_i
+      queue_size = `/usr/bin/wc -l #{QUEUE_PATH}`.lstrip.split(/\s+/).first.to_i
       if queue_size>=index
         cmd = "/usr/bin/tail -#{queue_size-index} #{QUEUE_PATH} | /usr/bin/head -#{size}"
         p cmd
